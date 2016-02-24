@@ -1,2 +1,2 @@
 # socket_to_tf
-Publish TF transforms from a TCP/IP socket
+ROS package that publishes TF transforms from a TCP/IP socket connection
