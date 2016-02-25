@@ -20,6 +20,13 @@ void SocketToTF::setupConfigurationFromParameterServer(ros::NodeHandlePtr& node_
 	private_node_handle_->param("server_host", transform_socket_server_host_, std::string("localhost"));
 	private_node_handle_->param("server_port_sync", transform_socket_server_port_sync_, -1);
 	private_node_handle_->param("server_port_data", transform_socket_server_port_data_, 1337);
+	private_node_handle_->param("use_static_transform_broadcaster", use_static_transform_broadcaster_, false);
+
+	if (use_static_transform_broadcaster_) {
+		static_transform_broadcaster_ptr_ = boost::shared_ptr< tf2_ros::StaticTransformBroadcaster >(new tf2_ros::StaticTransformBroadcaster());
+	} else {
+		transform_broadcaster_ptr_ = boost::shared_ptr< tf2_ros::TransformBroadcaster >(new tf2_ros::TransformBroadcaster());
+	}
 }
 
 
@@ -73,7 +80,12 @@ void SocketToTF::startPublishingTFFromSocket() {
 				ss_data << "{ " << transform.x << " " << transform.y << " " << transform.z << " " << transform.qx << " " << transform.qy << " " << transform.qz << " " << transform.qw << " " << transform.source_frame << " " << transform.target_frame << " }";
 				std::string transform_data = ss_data.str();
 				ROS_INFO_STREAM("Received message with size " << message.size() << ": " << transform_data);
-				transform_broadcaster_.sendTransform(transform_stamped_);
+
+				if (static_transform_broadcaster_ptr_) {
+					static_transform_broadcaster_ptr_->sendTransform(transform_stamped_);
+				} else if (transform_broadcaster_ptr_) {
+					transform_broadcaster_ptr_->sendTransform(transform_stamped_);
+				}
 			}
 		}
 		subscriber.close();

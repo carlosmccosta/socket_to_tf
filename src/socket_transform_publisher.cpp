@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 	// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		// parameters
 	if (argc < 12 || argc > 15) {
-		std::cerr << "Usage: socket_transform_publisher server_port_sync server_port_data x y z qx qy qz qw source_frame target_frame [number_of_retransmissions] [min_number_of_subscribers] [server_protocol]" << std::endl;
+		std::cerr << "Usage: socket_transform_publisher server_port_sync server_port_data x y z qx qy qz qw target_frame source_frame [number_of_retransmissions] [min_number_of_subscribers] [server_protocol]" << std::endl;
 		return 1;
 	}
 
@@ -91,8 +91,8 @@ int main(int argc, char** argv) {
 	transform.qy = atof(argv[7]);
 	transform.qz = atof(argv[8]);
 	transform.qw = atof(argv[9]);
-	transform.source_frame = argv[10];
-	transform.target_frame = argv[11];
+	transform.target_frame = argv[10];
+	transform.source_frame = argv[11];
 	transform.timestamp_seconds = 0;
 	transform.timestamp_nanoseconds = 0;
 

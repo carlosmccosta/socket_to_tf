@@ -18,6 +18,7 @@
 
 // ROS includes
 #include <ros/ros.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 
@@ -48,7 +49,7 @@ class SocketToTF {
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   </typedefs>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   <constructors-destructor>   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		SocketToTF() : transform_socket_server_port_sync_(-1), transform_socket_server_port_data_(1337), number_published_msgs_(0) {}
+		SocketToTF() : transform_socket_server_port_sync_(-1), transform_socket_server_port_data_(1337), use_static_transform_broadcaster_(false), number_published_msgs_(0) {}
 		virtual ~SocketToTF() {}
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   </constructors-destructor>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -66,6 +67,7 @@ class SocketToTF {
 		std::string transform_socket_server_host_;
 		int transform_socket_server_port_sync_;
 		int transform_socket_server_port_data_;
+		bool use_static_transform_broadcaster_;
 
 		// state fields
 		geometry_msgs::TransformStamped transform_stamped_;
@@ -74,7 +76,8 @@ class SocketToTF {
 		// ros communication fields
 		ros::NodeHandlePtr node_handle_;
 		ros::NodeHandlePtr private_node_handle_;
-		tf2_ros::TransformBroadcaster transform_broadcaster_;
+		boost::shared_ptr< tf2_ros::TransformBroadcaster > transform_broadcaster_ptr_;
+		boost::shared_ptr< tf2_ros::StaticTransformBroadcaster > static_transform_broadcaster_ptr_;
 	// ========================================================================   </protected-section>  ========================================================================
 };
 
