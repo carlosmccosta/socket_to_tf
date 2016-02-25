@@ -20,7 +20,7 @@ set(${PROJECT_NAME}_CATKIN_COMPONENTS
 )
 
 find_package(catkin REQUIRED COMPONENTS ${${PROJECT_NAME}_CATKIN_COMPONENTS})
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED iostreams serialization)
 
 find_path ( ZMQ_INCLUDE_DIR zmq.h )
 find_library ( ZMQ_LIBRARY NAMES zmq )
