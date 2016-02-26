@@ -247,16 +247,15 @@ void SocketToTF::approximatePointTranslationToAxis(socket_to_tf::PointTranslatio
 	double dx = point_translation.x_end - point_translation.x_start;
 	double dy = point_translation.y_end - point_translation.y_start;
 	double dz = point_translation.z_end - point_translation.z_start;
-	double vector_norm = std::sqrt(dx*dx + dy*dy + dz*dz);
 	point_translation.x_start = 0;
 	point_translation.y_start = 0;
 	point_translation.z_start = 0;
 	point_translation.x_end = 0;
 	point_translation.y_end = 0;
 	point_translation.z_end = 0;
-	if (dx > dy && dx > dz) { point_translation.x_end = vector_norm; }
-	if (dy > dx && dy > dz) { point_translation.y_end = vector_norm; }
-	if (dz > dx && dz > dy) { point_translation.z_end = vector_norm; }
+	if (dx > dy && dx > dz) { point_translation.x_end = dx; }
+	if (dy > dx && dy > dz) { point_translation.y_end = dy; }
+	if (dz > dx && dz > dy) { point_translation.z_end = dz; }
 }
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   </functions>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // =============================================================================  </public-section>  ===========================================================================
