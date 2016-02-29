@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 // ROS includes
 #include <ros/ros.h>
@@ -64,6 +65,8 @@ class SocketToTF {
 			socket_message_type_(TransformStamped),
 			use_incremental_transform_for_point_translation_(false),
 			approximate_point_translation_to_axis_(false),
+			use_boost_to_parse_point_translation_message_(false),
+			offset_for_same_point_translations_(10.0),
 			number_published_msgs_(0) {}
 		virtual ~SocketToTF() {}
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   </constructors-destructor>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -75,6 +78,7 @@ class SocketToTF {
 		bool updateTransformFromSocketTransform(zmq::message_t& message);
 		bool updateTransformFromSocketPointTranslation(zmq::message_t& message);
 		void approximatePointTranslationToAxis(socket_to_tf::PointTranslation& point_translation);
+		bool isStartEqualToEndPoint(const socket_to_tf::PointTranslation& point_translation);
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   </functions>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// ========================================================================   </public-section>  ===========================================================================
 
@@ -94,6 +98,7 @@ class SocketToTF {
 		bool use_incremental_transform_for_point_translation_;
 		bool approximate_point_translation_to_axis_;
 		bool use_boost_to_parse_point_translation_message_;
+		double offset_for_same_point_translations_;
 
 		// state fields
 		geometry_msgs::TransformStamped transform_stamped_;

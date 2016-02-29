@@ -52,6 +52,7 @@ void SocketToTF::setupConfigurationFromParameterServer(ros::NodeHandlePtr& node_
 	private_node_handle_->param("use_incremental_transform_for_point_translation", use_incremental_transform_for_point_translation_, false);
 	private_node_handle_->param("approximate_point_translation_to_axis", approximate_point_translation_to_axis_, false);
 	private_node_handle_->param("use_boost_to_parse_point_translation_message", use_boost_to_parse_point_translation_message_, false);
+	private_node_handle_->param("offset_for_same_point_translations", offset_for_same_point_translations_, 10.0);
 	private_node_handle_->param("use_raw_sockets", use_raw_sockets_, false);
 	private_node_handle_->param("use_raw_sockets_as_server", use_raw_sockets_as_server_, false);
 	if (use_raw_sockets_as_server_) {
@@ -212,13 +213,20 @@ bool SocketToTF::updateTransformFromSocketPointTranslation(zmq::message_t& messa
 		std::memcpy((void*)&point_translation.z_end,   (void*)((char*)message.data() + 5 * sizeof (int16_t)), sizeof (int16_t));
 	}
 
+	std::stringstream ss_data;
+	ss_data << "{ " << point_translation.x_start << " " << point_translation.y_start << " " << point_translation.z_start << " " << point_translation.x_end << " " << point_translation.y_end << " " << point_translation.z_end << " }";
+	std::string point_translation_data = ss_data.str();
+	ROS_INFO_STREAM("Received message with size " << message.size() << ": " << point_translation_data);
+
+	bool start_equal_to_end_point = isStartEqualToEndPoint(point_translation);
+
 	if (approximate_point_translation_to_axis_) {
 		approximatePointTranslationToAxis(point_translation);
 	}
 
 	if (boost::math::isfinite(point_translation.x_start) && boost::math::isfinite(point_translation.y_start) && boost::math::isfinite(point_translation.z_start) &&
 			boost::math::isfinite(point_translation.x_end) && boost::math::isfinite(point_translation.y_end) && boost::math::isfinite(point_translation.z_end)) {
-		if (use_incremental_transform_for_point_translation_) {
+		if (!use_incremental_transform_for_point_translation_) {
 			transform_stamped_.transform.translation.x = 0;
 			transform_stamped_.transform.translation.y = 0;
 			transform_stamped_.transform.translation.z = 0;
@@ -227,14 +235,15 @@ bool SocketToTF::updateTransformFromSocketPointTranslation(zmq::message_t& messa
 		transform_stamped_.transform.translation.y += point_translation.y_end * 0.0001 - point_translation.y_start * 0.0001;
 		transform_stamped_.transform.translation.z += point_translation.z_end * 0.0001 - point_translation.z_start * 0.0001;
 
+		if (start_equal_to_end_point) {
+			transform_stamped_.transform.translation.x += offset_for_same_point_translations_;
+			transform_stamped_.transform.translation.y += offset_for_same_point_translations_;
+			transform_stamped_.transform.translation.z += offset_for_same_point_translations_;
+		}
+
 		transform_stamped_.header.seq = number_published_msgs_++;
 		transform_stamped_.header.stamp.sec = 0;
 		transform_stamped_.header.stamp.nsec = 0;
-
-		std::stringstream ss_data;
-		ss_data << "{ " << point_translation.x_start << " " << point_translation.y_start << " " << point_translation.z_start << " " << point_translation.x_end << " " << point_translation.y_end << " " << point_translation.z_end << " }";
-		std::string point_translation_data = ss_data.str();
-		ROS_INFO_STREAM("Received message with size " << message.size() << ": " << point_translation_data);
 
 		return true;
 	}
@@ -247,15 +256,26 @@ void SocketToTF::approximatePointTranslationToAxis(socket_to_tf::PointTranslatio
 	double dx = point_translation.x_end - point_translation.x_start;
 	double dy = point_translation.y_end - point_translation.y_start;
 	double dz = point_translation.z_end - point_translation.z_start;
+	double dx_abs = std::abs(dx);
+	double dy_abs = std::abs(dy);
+	double dz_abs = std::abs(dz);
+
 	point_translation.x_start = 0;
 	point_translation.y_start = 0;
 	point_translation.z_start = 0;
 	point_translation.x_end = 0;
 	point_translation.y_end = 0;
 	point_translation.z_end = 0;
-	if (dx > dy && dx > dz) { point_translation.x_end = dx; }
-	if (dy > dx && dy > dz) { point_translation.y_end = dy; }
-	if (dz > dx && dz > dy) { point_translation.z_end = dz; }
+	if (dx_abs > dy_abs && dx_abs > dz_abs) { point_translation.x_end = dx; }
+	if (dy_abs > dx_abs && dy_abs > dz_abs) { point_translation.y_end = dy; }
+	if (dz_abs > dx_abs && dz_abs > dy_abs) { point_translation.z_end = dz; }
+}
+
+
+bool SocketToTF::isStartEqualToEndPoint(const socket_to_tf::PointTranslation& point_translation) {
+	return (point_translation.x_start == point_translation.x_end &&
+			point_translation.y_start == point_translation.y_end &&
+			point_translation.z_start == point_translation.z_end);
 }
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   </functions>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // =============================================================================  </public-section>  ===========================================================================
