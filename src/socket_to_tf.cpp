@@ -67,12 +67,12 @@ void SocketToTF::startPublishingTFFromSocket() {
 	if (transform_socket_server_port_data_ >= 0) {
 		zmq::context_t context(1);
 		zmq::socket_t subscriber(context, use_raw_sockets_ ? ZMQ_STREAM : ZMQ_SUB);
-		std::stringstream ss_connection_;
-		ss_connection_ << transform_socket_server_protocol_ << "://" << transform_socket_server_host_ << ":" << transform_socket_server_port_data_;
+		std::stringstream ss_connection;
+		ss_connection << transform_socket_server_protocol_ << "://" << transform_socket_server_host_ << ":" << transform_socket_server_port_data_;
 		if (use_raw_sockets_as_server_) {
-			subscriber.bind(ss_connection_.str().c_str());
+			subscriber.bind(ss_connection.str().c_str());
 		} else {
-			subscriber.connect(ss_connection_.str().c_str());
+			subscriber.connect(ss_connection.str().c_str());
 		}
 
 		if (!use_raw_sockets_) {
@@ -88,7 +88,7 @@ void SocketToTF::startPublishingTFFromSocket() {
 			zmq::message_t peer_id;
 			zmq::message_t message;
 
-			ROS_INFO_STREAM("Listening for data using [" << ss_connection_.str() <<"]");
+			ROS_INFO_STREAM("Listening for data using [" << ss_connection.str() <<"]");
 			if (use_raw_sockets_) { if (!subscriber.recv(&peer_id)) { ROS_WARN("Failed to receive peer_id"); continue; } }
 
 			if (!subscriber.recv(&message)) {
